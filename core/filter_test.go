@@ -37,7 +37,7 @@ func TestGetLog(t *testing.T) {
 	acc1 := account.CreatAddressFromIdentity(id1, 0)
 
 	fakeMoney := uint64(100000000000000000)
-	env := SetUp(&acc1, &fakeMoney, nil)
+	env := setUp(&acc1, &fakeMoney, nil)
 	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
