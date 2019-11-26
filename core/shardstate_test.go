@@ -1572,7 +1572,7 @@ func TestShardStateTecoveryFromGenesis(t *testing.T) {
 	assert.Equal(t, recoveredState.CurrentBlock().Hash().String(), recoveredState.CurrentBlock().Hash().String())
 	assert.Equal(t, recoveredState.CurrentBlock().Hash().String(), genesis.Hash().String())
 
-	assert.Equal(t, true, recoveredState.ConfirmedHeaderTip == nil)
+	assert.Equal(t, true, recoveredState.confirmedHeaderTip == nil)
 	assert.Equal(t, recoveredState.CurrentBlock().GetMetaData().Hash().String(), genesis.(*types.MinorBlock).GetMetaData().Hash().String())
 
 	currState := recoveredState.currentEvmState
