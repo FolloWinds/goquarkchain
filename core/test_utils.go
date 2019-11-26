@@ -27,7 +27,7 @@ var (
 	jiaozi                       = new(big.Int).Mul(new(big.Int).SetUint64(1000000000), new(big.Int).SetUint64(1000000000))
 	testShardCoinbaseAmount      = new(big.Int).Mul(new(big.Int).SetUint64(5), jiaozi)
 	testGenesisTokenID           = common.TokenIDEncode("QKC")
-	testGenesisMinorTokenBalance = make(map[string]*big.Int)
+	TestGenesisMinorTokenBalance = make(map[string]*big.Int)
 )
 
 type fakeEnv struct {
@@ -42,7 +42,7 @@ func getOneDBPath() (int, string) {
 	panic("unexcepted err")
 }
 
-func getTestEnv(genesisAccount *account.Address, genesisMinorQuarkHash *uint64, chainSize *uint32, shardSize *uint32, genesisRootHeights *map[uint32]uint32, remoteMining *bool) *fakeEnv {
+func GetTestEnv(genesisAccount *account.Address, genesisMinorQuarkHash *uint64, chainSize *uint32, shardSize *uint32, genesisRootHeights *map[uint32]uint32, remoteMining *bool) *fakeEnv {
 	if genesisAccount == nil {
 		temp := account.CreatEmptyAddress(0)
 		genesisAccount = &temp
@@ -110,8 +110,8 @@ func getTestEnv(genesisAccount *account.Address, genesisMinorQuarkHash *uint64, 
 	for _, v := range ids {
 		addr := genesisAccount.AddressInShard(v)
 		shardConfig := fakeClusterConfig.Quarkchain.GetShardConfigByFullShardID(v)
-		if len(testGenesisMinorTokenBalance) != 0 {
-			shardConfig.Genesis.Alloc[addr] = config.Allocation{Balances: testGenesisMinorTokenBalance}
+		if len(TestGenesisMinorTokenBalance) != 0 {
+			shardConfig.Genesis.Alloc[addr] = config.Allocation{Balances: TestGenesisMinorTokenBalance}
 			continue
 		}
 		temp := make(map[string]*big.Int)
@@ -123,7 +123,7 @@ func getTestEnv(genesisAccount *account.Address, genesisMinorQuarkHash *uint64, 
 	return env
 }
 
-func createDefaultShardState(env *fakeEnv, shardID *uint32, diffCalc consensus.DifficultyCalculator, poswOverride *bool, flagEngine *bool) *MinorBlockChain {
+func CreateDefaultShardState(env *fakeEnv, shardID *uint32, diffCalc consensus.DifficultyCalculator, poswOverride *bool, flagEngine *bool) *MinorBlockChain {
 	if shardID == nil {
 		temp := uint32(0)
 		shardID = &temp
@@ -173,11 +173,11 @@ func createDefaultShardState(env *fakeEnv, shardID *uint32, diffCalc consensus.D
 }
 
 func setUp(genesisAccount *account.Address, genesisMinotQuarkash *uint64, shardSize *uint32) *fakeEnv {
-	env := getTestEnv(genesisAccount, genesisMinotQuarkash, nil, shardSize, nil, nil)
+	env := GetTestEnv(genesisAccount, genesisMinotQuarkash, nil, shardSize, nil, nil)
 	return env
 }
 
-func createTransferTransaction(
+func CreateTransferTransaction(
 	shardState *MinorBlockChain, key []byte,
 	fromAddress account.Address, toAddress account.Address,
 	value *big.Int, gas *uint64, gasPrice *uint64, nonce *uint64, data []byte, gasTokenID *uint64, transferTokenID *uint64,
@@ -255,7 +255,7 @@ func CreateFakeMinorCanonicalPoSW(acc1 account.Address, shardId *uint32, genesis
 	}
 	poswFlag := true
 	engineFlag := true
-	shardState := createDefaultShardState(env, shardId, diffCalculator, &poswFlag, &engineFlag)
+	shardState := CreateDefaultShardState(env, shardId, diffCalculator, &poswFlag, &engineFlag)
 	return shardState, nil
 }
 
@@ -269,7 +269,7 @@ func CreateTransferTx(shardState *MinorBlockChain, key []byte,
 		gas = new(uint64)
 		*gas = 21000
 	}
-	return createTransferTransaction(shardState, key, from, to, value, gas, gasPrice, nonce, nil, nil, nil)
+	return CreateTransferTransaction(shardState, key, from, to, value, gas, gasPrice, nonce, nil, nil, nil)
 }
 func CreateCallContractTx(shardState *MinorBlockChain, key []byte,
 	from account.Address, to account.Address, value *big.Int, gas, gasPrice, nonce *uint64, data []byte) *types.Transaction {
@@ -281,7 +281,7 @@ func CreateCallContractTx(shardState *MinorBlockChain, key []byte,
 		gas = new(uint64)
 		*gas = 21000
 	}
-	return createTransferTransaction(shardState, key, from, to, value, gas, gasPrice, nonce, data, nil, nil)
+	return CreateTransferTransaction(shardState, key, from, to, value, gas, gasPrice, nonce, data, nil, nil)
 }
 
 func GetPoSW(chain *MinorBlockChain) *posw.PoSW {

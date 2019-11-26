@@ -37,8 +37,8 @@ func TestGetLog(t *testing.T) {
 	acc1 := account.CreatAddressFromIdentity(id1, 0)
 
 	fakeMoney := uint64(100000000000000000)
-	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := createDefaultShardState(env, nil, nil, nil, nil)
+	env := SetUp(&acc1, &fakeMoney, nil)
+	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -114,6 +114,7 @@ func TestGetLog(t *testing.T) {
 	address := make([]common.Address, 0)
 	address = append(address, contractAddr)
 	filter := NewRangeFilter(shardState, 0, 2, address, nil) //address is match
+
 	logs, err := filter.Logs()
 	assert.NoError(t, err)
 	assert.Equal(t, len(logs), 1)
@@ -161,4 +162,26 @@ func TestGetLog(t *testing.T) {
 	logs, err = filter.Logs()
 	assert.NoError(t, err)
 	assert.Equal(t, len(logs), 1)
+}
+
+func TestBloomBits(t *testing.T) {
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	genesisMinorQuarkash := uint64(100000)
+	env := setUp(&acc1, &genesisMinorQuarkash, nil)
+	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	tx, err := CreateContract(shardState, id1.GetKey(), acc1, acc1.FullShardKey, ContractCreationByteCode)
+
+	if err != nil {
+		t.Errorf("CreateContract error: %v", err)
+	}
+	err1 := shardState.AddTx(tx)
+	if err1 != nil {
+		t.Errorf("AddTx error: %v", err1)
+	}
+	b, _ := shardState.CreateBlockToMine(nil, &acc1, nil, nil, nil)
+	b2, re, err := shardState.FinalizeAndAddBlock(b)
+	bloom := types.CreateBloom(re)
+	assert.Equal(t, b2.Bloom(), bloom)
+
 }
