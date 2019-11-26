@@ -1524,7 +1524,7 @@ func TestShardStateRecoveryFromRootBlock(t *testing.T) {
 	assert.Equal(t, tempBlock.Hash().String(), b1.Hash().String())
 	assert.Equal(t, recoveredState.rootTip.Hash().String(), rootBlock.Hash().String())
 	assert.Equal(t, recoveredState.CurrentBlock().Hash().String(), blockHeaders[4].Hash().String())
-	assert.Equal(t, recoveredState.ConfirmedHeaderTip.Hash().String(), blockHeaders[4].Hash().String())
+	assert.Equal(t, recoveredState.confirmedHeaderTip.Hash().String(), blockHeaders[4].Hash().String())
 }
 
 func TestShardStateTecoveryFromGenesis(t *testing.T) {
