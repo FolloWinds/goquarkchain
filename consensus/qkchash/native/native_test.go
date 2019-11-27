@@ -43,6 +43,7 @@ func TestNativeTokenTransfer(t *testing.T) {
 	}
 	assert.NotEqual(t, tTxList[0].Value, &serialize.Uint256{Value: big.NewInt(12345)})
 }
+
 func TestNativeTokenTransferValueSuccess(t *testing.T) {
 	MALICIOUS0 := common.TokenIDEncode("MALICIOUS0")
 	id1, _ := account.CreatRandomIdentity()
@@ -78,5 +79,4 @@ func TestNativeTokenTransferValueSuccess(t *testing.T) {
 		QKC: big.NewInt(10000000 - 21000),
 	})
 	assert.Equal(t, b2, t2)
-
 }
