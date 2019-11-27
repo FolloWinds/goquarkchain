@@ -167,7 +167,7 @@ func TestGetLog(t *testing.T) {
 func TestBloomBits(t *testing.T) {
 	id1, _ := account.CreatRandomIdentity()
 	acc1 := account.CreatAddressFromIdentity(id1, 0)
-	genesisMinorQuarkash := uint64(100000)
+	genesisMinorQuarkash := uint64(100000000000)
 	env := setUp(&acc1, &genesisMinorQuarkash, nil)
 	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
 	tx, err := CreateContract(shardState, id1.GetKey(), acc1, acc1.FullShardKey, ContractCreationByteCode)
