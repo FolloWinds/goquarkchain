@@ -3,6 +3,7 @@ package native
 import (
 	"github.com/QuarkChain/goquarkchain/account"
 	"github.com/QuarkChain/goquarkchain/core"
+	"github.com/QuarkChain/goquarkchain/serialize"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 
@@ -35,4 +36,10 @@ func TestNativeTokenTransfer(t *testing.T) {
 	assert.Equal(t, len(b1.Transactions()), 1)
 	shardState.FinalizeAndAddBlock(b1)
 	assert.Equal(t, shardState.CurrentHeader(), b1.Header())
+	tTxList, _, err := shardState.GetTransactionByAddress(acc1, &QETH, nil, 20)
+	if err != nil {
+		t.Errorf("GetTransactionByAddress error :%v", err)
+	}
+	assert.NotEqual(t, tTxList[0].Value, &serialize.Uint256{Value: big.NewInt(12345)})
+
 }
