@@ -137,7 +137,6 @@ func (m *MinorBlockChain) updateTip(state *state.StateDB, block *types.MinorBloc
 	}
 	if updateTip {
 		m.currentEvmState = state
-		m.confirmedHeaderTip = block.Header()
 	}
 	return updateTip, nil
 }
