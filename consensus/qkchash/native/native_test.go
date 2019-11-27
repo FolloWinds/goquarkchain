@@ -15,6 +15,13 @@ import (
 	"testing"
 )
 
+var (
+	// jiaozi 10^18
+	jiaozi                   = new(big.Int).Mul(new(big.Int).SetUint64(1000000000), new(big.Int).SetUint64(1000000000))
+	testShardCoinbaseAmount  = new(big.Int).Mul(new(big.Int).SetUint64(5), jiaozi)
+	testShardCoinbaseAmount2 = new(big.Int).Mul(new(big.Int).SetUint64(200), jiaozi)
+)
+
 func TestNativeTokenTransfer(t *testing.T) {
 	QETH := common.TokenIDEncode("QETH")
 	id1, _ := account.CreatRandomIdentity()
@@ -214,4 +221,115 @@ func TestXshardNativeTokenReceived(t *testing.T) {
 	assert.Equal(t, balance1.GetTokenBalance(QETHXX), new(big.Int).Add(big.NewInt(999999), big.NewInt(888888)))
 	evmState, _ := shardState0.State()
 	assert.Equal(t, evmState.GetGasUsed(), big.NewInt(9000))
+}
+
+func TestXshardNativeTokenGasSent(t *testing.T) {
+	QETHXX := common.TokenIDEncode("QETHXX")
+	QKC := common.TokenIDEncode("QKC")
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	acc2 := account.CreatAddressFromIdentity(id1, 1)
+	acc3 := account.CreatEmptyAddress(0)
+	core.TestGenesisMinorTokenBalance["QETHXX"] = big.NewInt(999999)
+	core.TestGenesisMinorTokenBalance["QKC"] = big.NewInt(10000000)
+	env := core.GetTestEnv(&acc1, nil, nil, nil, nil, nil)
+	shardId := uint32(0)
+	shardState := core.CreateDefaultShardState(env, &shardId, nil, nil, nil)
+	env1 := core.GetTestEnv(&acc1, nil, nil, nil, nil, nil)
+	shardId1 := uint32(1)
+	core.TestGenesisMinorTokenBalance = make(map[string]*big.Int)
+	shardState1 := core.CreateDefaultShardState(env1, &shardId1, nil, nil, nil)
+	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
+	rootBlock.AddMinorBlockHeader(shardState.CurrentBlock().Header())
+	rootBlock.AddMinorBlockHeader(shardState1.CurrentBlock().Header())
+	rootBlock.Finalize(nil, nil, common.EmptyHash)
+	shardState.AddRootBlock(rootBlock)
+	val := big.NewInt(888888)
+	gas := new(big.Int).Add(big.NewInt(9000), big.NewInt(21000)).Uint64()
+	tx := core.CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, nil, &QETHXX, &QETHXX)
+	shardState.AddTx(tx)
+	b1, _ := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
+	assert.Equal(t, len(b1.Transactions()), 1)
+	evmState, _ := shardState.State()
+	assert.Equal(t, evmState.GetGasUsed(), 0)
+	shardState.FinalizeAndAddBlock(b1)
+	assert.Equal(t, len(evmState.GetXShardList()), 1)
+	deposit := types.CrossShardTransactionDeposit{TxHash: tx.Hash(), From: acc1, To: acc2, Value: &serialize.Uint256{Value: val}, GasPrice: &serialize.Uint256{Value: big.NewInt(1)}, GasTokenID: QETHXX, TransferTokenID: QETHXX}
+	assert.Equal(t, evmState.GetXShardList()[0], deposit)
+	balance, _ := shardState.GetBalance(acc1.Recipient, nil)
+	balance3, _ := shardState.GetBalance(acc3.Recipient, nil)
+	assert.Equal(t, balance.GetTokenBalance(QETHXX), big.NewInt(9999999-8888888-21000-9000))
+	assert.Equal(t, evmState.GetGasUsed(), big.NewInt(21000+9000))
+	assert.Equal(t, balance3.GetTokenBalance(QKC), afterTax(testShardCoinbaseAmount.Uint64(), shardState))
+	assert.Equal(t, balance3.GetTokenBalance(QETHXX), afterTax(big.NewInt(21000).Uint64(), shardState))
+}
+
+func TestXshardNativeTokenGasReceived(t *testing.T) {
+	QETHXX := common.TokenIDEncode("QETHXX")
+	QKC := common.TokenIDEncode("QKC")
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	acc2 := account.CreatAddressFromIdentity(id1, 16)
+	acc3 := account.CreatEmptyAddress(0)
+	core.TestGenesisMinorTokenBalance["QETHXX"] = big.NewInt(999999)
+	core.TestGenesisMinorTokenBalance["QKC"] = big.NewInt(10000000)
+	shardSize := uint32(64)
+	env0 := core.GetTestEnv(&acc1, nil, nil, &shardSize, nil, nil)
+	env1 := core.GetTestEnv(&acc1, nil, nil, &shardSize, nil, nil)
+	shardId := uint32(0)
+	shardState0 := core.CreateDefaultShardState(env0, &shardId, nil, nil, nil)
+	shardId1 := uint32(16)
+	shardState1 := core.CreateDefaultShardState(env1, &shardId1, nil, nil, nil)
+	rootBlock := shardState0.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
+	rootBlock.AddMinorBlockHeader(shardState0.CurrentBlock().Header())
+	rootBlock.AddMinorBlockHeader(shardState1.CurrentBlock().Header())
+	rootBlock.Finalize(nil, nil, common.EmptyHash)
+	shardState0.AddRootBlock(rootBlock)
+	b0, _ := shardState0.CreateBlockToMine(nil, nil, nil, nil, nil)
+	shardState0.FinalizeAndAddBlock(b0)
+	b1 := shardState1.CurrentBlock().CreateBlockToAppend(nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	b1.Header().ParentHash = rootBlock.Header().Hash()
+	val := big.NewInt(888888)
+	gas := new(big.Int).Add(big.NewInt(9000), big.NewInt(21000)).Uint64()
+	gasPrice := uint64(2)
+	tx := core.CreateTransferTransaction(shardState1, id1.GetKey().Bytes(), acc2, acc1, val, &gas, &gasPrice, nil, nil, &QETHXX, &QETHXX)
+	b1.AddTx(tx)
+	deposit := types.CrossShardTransactionDeposit{TxHash: tx.Hash(), From: acc1, To: acc2, Value: &serialize.Uint256{Value: val}, GasPrice: &serialize.Uint256{Value: big.NewInt(2)}, GasTokenID: QETHXX, TransferTokenID: QETHXX}
+	txL := make([]*types.CrossShardTransactionDeposit, 0)
+	txL = append(txL, &deposit)
+	txList := types.CrossShardTransactionDepositList{txL}
+	shardState0.AddCrossShardTxListByMinorBlockHash(b1.Header().Hash(), txList)
+	rootBlock = shardState0.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
+	rootBlock.AddMinorBlockHeader(b0.Header())
+	rootBlock.AddMinorBlockHeader(b1.Header())
+	rootBlock.Finalize(nil, nil, common.EmptyHash)
+	shardState0.AddRootBlock(rootBlock)
+	b2, _ := shardState0.CreateBlockToMine(nil, &acc3, nil, nil, nil)
+	shardState0.FinalizeAndAddBlock(b2)
+	balance1, _ := shardState0.GetBalance(acc1.Recipient, nil)
+	assert.Equal(t, balance1.GetTokenBalance(QETHXX), new(big.Int).Add(big.NewInt(999999), big.NewInt(888888)))
+	evmState, _ := shardState0.State()
+	assert.Equal(t, evmState.GetGasUsed(), big.NewInt(9000))
+	//Half collected by root
+	balance3, _ := shardState0.GetBalance(acc3.Recipient, nil)
+	assert.Equal(t, balance3.GetTokenBalance(QKC), afterTax(testShardCoinbaseAmount.Uint64(), shardState0))
+	assert.Equal(t, balance3.GetTokenBalance(QETHXX), afterTax(uint64(18000), shardState0))
+}
+
+func TestContractSuicide(t *testing.T) {
+	//Kill Call Data: 0x41c0e1b5
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	acc3 := account.CreatEmptyAddress(0)
+	core.TestGenesisMinorTokenBalance["QETHXX"] = big.NewInt(999999)
+	core.TestGenesisMinorTokenBalance["QKC"] = testShardCoinbaseAmount2
+	env := core.GetTestEnv(&acc1, nil, nil, nil, nil, nil)
+	shardState := core.CreateDefaultShardState(env, nil, nil, nil, nil)
+	// 1. create contract
+	BYTECODE := "6080604052348015600f57600080fd5b5060948061001e6000396000f3fe6080604052600436106039576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b514603b575b005b348015604657600080fd5b50604d604f565b005b3373ffffffffffffffffffffffffffffffffffffffff16fffea165627a7a7230582034cc4e996685dcadcc12db798751d2913034a3e963356819f2293c3baea4a18c0029"
+	tx, _ := core.CreateContract(shardState, id1.GetKey(), acc1, acc1.FullShardKey, BYTECODE)
+	shardState.AddTx(tx)
+	b1, _ := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
+	assert.Equal(t, len(b1.Transactions()), 1)
+	shardState.FinalizeAndAddBlock(b1)
 }
