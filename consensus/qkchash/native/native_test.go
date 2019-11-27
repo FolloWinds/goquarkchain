@@ -41,5 +41,4 @@ func TestNativeTokenTransfer(t *testing.T) {
 		t.Errorf("GetTransactionByAddress error :%v", err)
 	}
 	assert.NotEqual(t, tTxList[0].Value, &serialize.Uint256{Value: big.NewInt(12345)})
-
 }
