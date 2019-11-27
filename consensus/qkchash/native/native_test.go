@@ -82,5 +82,18 @@ func TestNativeTokenTransferValueSuccess(t *testing.T) {
 }
 
 func TestDisallowedUnknownToken(t *testing.T) {
-
+	MALICIOUS0 := common.TokenIDEncode("MALICIOUS0")
+	MALICIOUS1 := common.TokenIDEncode("MALICIOUS1")
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	core.TestGenesisMinorTokenBalance["QKC"] = big.NewInt(10000000)
+	env := core.GetTestEnv(&acc1, nil, nil, nil, nil, nil)
+	shardState := core.CreateDefaultShardState(env, nil, nil, nil, nil)
+	val := big.NewInt(0)
+	gas := uint64(21000)
+	gasPrice := uint64(1)
+	tx1 := core.CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc1, val, &gas, &gasPrice, nil, nil, nil, &MALICIOUS0)
+	assert.Error(t, shardState.AddTx(tx1))
+	tx2 := core.CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc1, val, &gas, &gasPrice, nil, nil, nil, &MALICIOUS1)
+	assert.Error(t, shardState.AddTx(tx2))
 }
