@@ -34,5 +34,5 @@ func TestNativeTokenTransfer(t *testing.T) {
 	b1, _ := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
 	assert.Equal(t, len(b1.Transactions()), 1)
 	shardState.FinalizeAndAddBlock(b1)
-	assert.Equal(t, shardState.CurrentBlock().Header(), b1.Header())
+	assert.Equal(t, shardState.CurrentHeader(), b1.Header())
 }
