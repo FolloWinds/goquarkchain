@@ -2874,3 +2874,84 @@ func TestSigToAddr(t *testing.T) {
 	_, err = state0.AddRootBlock(rootBlock)
 	assert.NoError(t, err)
 }
+
+func TestBlocksWithIncorrectVersion(t *testing.T) {
+	env := GetTestEnv(nil, nil, nil, nil, nil, nil)
+	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
+	rootBlock.Header().Version = 1
+	_, err := shardState.AddRootBlock(rootBlock.Finalize(nil, nil, common.Hash{}))
+	if err != nil {
+		t.Errorf("incorrect minor block version err:%v", err)
+	}
+	rootBlock.Header().Version = 0
+	_, err = shardState.AddRootBlock(rootBlock.Finalize(nil, nil, common.Hash{}))
+	if err != nil {
+		t.Errorf("incorrect minor block version err:%v", err)
+	}
+	shardBlock, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	shardBlock.Header().Version = 1
+	_, _, err = shardState.FinalizeAndAddBlock(shardBlock)
+	if err != nil {
+		t.Errorf("incorrect minor block version err:%v", err)
+	}
+	shardBlock.Header().Version = 0
+	_, _, err = shardState.FinalizeAndAddBlock(shardBlock)
+	if err != nil {
+		t.Errorf("incorrect minor block version err:%v", err)
+	}
+}
+
+func TestEnablEvmTimestampWithContractCall(t *testing.T) {
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	acc2 := account.CreatEmptyAddress(0)
+	a := big.NewInt(10000000).Uint64()
+	env := GetTestEnv(&acc1, &a, nil, nil, nil, nil)
+	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
+	shardState.AddRootBlock(rootBlock)
+	val := big.NewInt(12345)
+	gas := uint64(50000)
+	tx1 := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, []byte("1234"), nil, nil)
+	error := shardState.AddTx(tx1)
+	if error != nil {
+		t.Errorf("addTx error: %v", error)
+	}
+	b1, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b1.Transactions()), 1)
+	env.clusterConfig.Quarkchain.EnableEvmTimeStamp = b1.Header().GetTime() + uint64(100)
+	b2, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b2.Transactions()), 0)
+
+	_, _, err := shardState.FinalizeAndAddBlock(b1)
+	if err != nil {
+		t.Logf("smart contract tx is not allowed before evm is enabled ")
+	}
+}
+
+func TestEnableEvmTimestampWithContractCreate(t *testing.T) {
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	a := big.NewInt(10000000).Uint64()
+	env := GetTestEnv(&acc1, &a, nil, nil, nil, nil)
+	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
+	shardState.AddRootBlock(rootBlock)
+
+	tx, err := CreateContract(shardState, id1.GetKey(), acc1, 0, "")
+	if err != nil {
+		t.Errorf("CreateContract err:%v", err)
+	}
+	assert.NoError(t, shardState.AddTx(tx))
+	b1, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b1.Transactions()), 1)
+	env.clusterConfig.Quarkchain.EnableEvmTimeStamp = b1.Header().GetTime() + uint64(100)
+	b2, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b2.Transactions()), 0)
+
+	_, _, err = shardState.FinalizeAndAddBlock(b1)
+	if err != nil {
+		t.Logf("smart contract tx is not allowed before evm is enabled ")
+	}
+}
