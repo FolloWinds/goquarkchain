@@ -156,7 +156,7 @@ func TestXshardNativeTokenSent(t *testing.T) {
 	b1, _ := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
 	assert.Equal(t, len(b1.Transactions()), 1)
 	evmState, _ := shardState.State()
-	assert.Equal(t, evmState.GetGasUsed(), 0)
+	assert.Equal(t, evmState.GetGasUsed(), big.NewInt(0))
 	shardState.FinalizeAndAddBlock(b1)
 	assert.Equal(t, len(evmState.GetXShardList()), 1)
 	deposit := types.CrossShardTransactionDeposit{TxHash: tx.Hash(), From: acc1, To: acc2, Value: &serialize.Uint256{Value: val}, GasPrice: &serialize.Uint256{Value: big.NewInt(1)}, GasTokenID: QKC, TransferTokenID: QETHXX}
