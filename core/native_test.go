@@ -199,7 +199,7 @@ func TestXshardNativeTokenReceived(t *testing.T) {
 	deposit := types.CrossShardTransactionDeposit{TxHash: tx.Hash(), From: acc1, To: acc2, Value: &serialize.Uint256{Value: val}, GasPrice: &serialize.Uint256{Value: big.NewInt(1)}, GasTokenID: QKC, TransferTokenID: QETHXX}
 	txL := make([]*types.CrossShardTransactionDeposit, 0)
 	txL = append(txL, &deposit)
-	txList := types.CrossShardTransactionDepositList{txL}
+	txList := types.CrossShardTransactionDepositList{TXList: txL}
 	shardState0.AddCrossShardTxListByMinorBlockHash(b1.Header().Hash(), txList)
 	rootBlock = shardState0.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
 	rootBlock.AddMinorBlockHeader(shardState0.CurrentBlock().Header())
@@ -288,7 +288,7 @@ func TestXshardNativeTokenGasReceived(t *testing.T) {
 	deposit := types.CrossShardTransactionDeposit{TxHash: tx.Hash(), From: acc1, To: acc2, Value: &serialize.Uint256{Value: val}, GasPrice: &serialize.Uint256{Value: big.NewInt(2)}, GasTokenID: QETHXX, TransferTokenID: QETHXX}
 	txL := make([]*types.CrossShardTransactionDeposit, 0)
 	txL = append(txL, &deposit)
-	txList := types.CrossShardTransactionDepositList{txL}
+	txList := types.CrossShardTransactionDepositList{TXList: txL}
 	shardState0.AddCrossShardTxListByMinorBlockHash(b1.Header().Hash(), txList)
 	rootBlock = shardState0.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
 	rootBlock.AddMinorBlockHeader(b0.Header())
