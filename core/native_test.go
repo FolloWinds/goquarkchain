@@ -167,12 +167,7 @@ func TestXshardNativeTokenSent(t *testing.T) {
 	assert.Equal(t, balance.GetTokenBalance(QETHXX), big.NewInt(999999-888888))
 	assert.Equal(t, evmState.GetGasUsed(), big.NewInt(21000))
 }
-func afterTax(reward uint64, shardState *MinorBlockChain) *big.Int {
-	rate := shardState.Config().LocalFeeRate
-	rewardRated := new(big.Int).Mul(new(big.Int).SetUint64(reward), rate.Num())
-	rewardRated = new(big.Int).Div(rewardRated, rate.Denom())
-	return rewardRated
-}
+
 func TestXshardNativeTokenReceived(t *testing.T) {
 	QETHXX := common.TokenIDEncode("QETHXX")
 	QKC := common.TokenIDEncode("QKC")
