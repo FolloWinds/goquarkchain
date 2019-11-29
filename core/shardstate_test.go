@@ -2938,7 +2938,6 @@ func TestEnableEvmTimestampWithContractCreate(t *testing.T) {
 	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
 	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
 	shardState.AddRootBlock(rootBlock)
-
 	tx, err := CreateContract(shardState, id1.GetKey(), acc1, 0, "")
 	if err != nil {
 		t.Errorf("CreateContract err:%v", err)
@@ -2949,9 +2948,107 @@ func TestEnableEvmTimestampWithContractCreate(t *testing.T) {
 	env.clusterConfig.Quarkchain.EnableEvmTimeStamp = b1.Header().GetTime() + uint64(100)
 	b2, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
 	assert.Equal(t, len(b2.Transactions()), 0)
-
 	_, _, err = shardState.FinalizeAndAddBlock(b1)
 	if err != nil {
 		t.Logf("smart contract tx is not allowed before evm is enabled ")
 	}
+}
+
+func TestEnableTxTimestamp(t *testing.T) {
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	id2, _ := account.CreatRandomIdentity()
+	acc2 := account.CreatAddressFromIdentity(id2, 0)
+	acc3 := account.CreatEmptyAddress(0)
+	a := big.NewInt(10000000).Uint64()
+	env := GetTestEnv(&acc1, &a, nil, nil, nil, nil)
+	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
+	shardState.AddRootBlock(rootBlock)
+	val := big.NewInt(5000000)
+	gas := uint64(50000)
+	tx := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, []byte("1234"), nil, nil)
+	error := shardState.AddTx(tx)
+	if error != nil {
+		t.Errorf("addTx error: %v", error)
+	}
+	b1, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b1.Transactions()), 1)
+	env.clusterConfig.Quarkchain.EnableEvmTimeStamp = b1.Header().GetTime() + uint64(100)
+	b2, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b2.Transactions()), 1)
+	_, _, err := shardState.FinalizeAndAddBlock(b1)
+	if err != nil {
+		t.Logf("smart contract tx is not allowed before evm is enabled ")
+	}
+	val2 := big.NewInt(12345)
+	gas2 := uint64(50000)
+	tx2 := CreateTransferTransaction(shardState, id2.GetKey().Bytes(), acc2, acc3, val2, &gas2, nil, nil, []byte("1234"), nil, nil)
+	env.clusterConfig.Quarkchain.EnableEvmTimeStamp = 0
+	error = shardState.AddTx(tx2)
+	if error != nil {
+		t.Errorf("addTx error: %v", error)
+	}
+	b3, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b3.Transactions()), 1)
+	env.clusterConfig.Quarkchain.EnableEvmTimeStamp = b1.Header().GetTime() + uint64(100)
+	b4, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b4.Transactions()), 1)
+	_, _, err = shardState.FinalizeAndAddBlock(b4)
+	if err != nil {
+		t.Logf("unwhitelisted senders not allowed before tx is enabled")
+	}
+}
+
+func TestFailedTransactionGas(t *testing.T) {
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	acc2 := account.CreatEmptyAddress(0)
+	TestGenesisMinorTokenBalance["QKC"] = testShardCoinbaseAmount2
+	env := GetTestEnv(&acc1, nil, nil, nil, nil, nil)
+	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	//Create failed contract with revert operation
+	/**
+	pragma solidity ^0.5.1;
+	        contract RevertContract {
+	            constructor() public {
+	                revert();
+	            }
+	        }
+	*/
+	//FAILED_TRANSACTION_COST := 54416
+
+	tx, _ := CreateContract(shardState, id1.GetKey(), acc1, acc1.FullShardKey, "6080604052348015600f57600080fd5b50600080fdfe")
+	assert.NoError(t, shardState.AddTx(tx))
+	b1, _ := shardState.CreateBlockToMine(nil, &acc2, nil, nil, nil)
+	assert.Equal(t, len(b1.Transactions()), 1)
+	_, _, err := shardState.FinalizeAndAddBlock(b1)
+	if err != nil {
+		t.Logf("smart contract tx is not allowed before evm is enabled ")
+	}
+	assert.Equal(t, shardState.CurrentHeader(), b1.Header())
+	//Check receipts and make sure the transaction is failed
+	//evmState, _ := shardState.State()
+	//state.evm_state.receipts  ?
+
+}
+
+func TestIncorrectCoinbaseAmount(t *testing.T) {
+
+}
+
+func TestShardCoinbaseDecay(t *testing.T) {
+
+}
+
+func TestShardReorgByAddingRootBlock(t *testing.T) {
+
+}
+
+func TestSkipUnderPricedTxToBlock(t *testing.T) {
+
+}
+
+func TestXshardGasLimitFromMultipleShards(t *testing.T) {
+
 }
