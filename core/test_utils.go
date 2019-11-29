@@ -42,7 +42,7 @@ func getOneDBPath() (int, string) {
 	panic("unexcepted err")
 }
 
-func GetTestEnv(genesisAccount *account.Address, genesisMinorQuarkHash *uint64, chainSize *uint32, shardSize *uint32, genesisRootHeights *map[uint32]uint32, remoteMining *bool) *fakeEnv {
+func getTestEnv(genesisAccount *account.Address, genesisMinorQuarkHash *uint64, chainSize *uint32, shardSize *uint32, genesisRootHeights *map[uint32]uint32, remoteMining *bool) *fakeEnv {
 	if genesisAccount == nil {
 		temp := account.CreatEmptyAddress(0)
 		genesisAccount = &temp
@@ -173,7 +173,7 @@ func createDefaultShardState(env *fakeEnv, shardID *uint32, diffCalc consensus.D
 }
 
 func setUp(genesisAccount *account.Address, genesisMinotQuarkash *uint64, shardSize *uint32) *fakeEnv {
-	env := GetTestEnv(genesisAccount, genesisMinotQuarkash, nil, shardSize, nil, nil)
+	env := getTestEnv(genesisAccount, genesisMinotQuarkash, nil, shardSize, nil, nil)
 	return env
 }
 
