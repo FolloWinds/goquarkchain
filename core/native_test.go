@@ -31,7 +31,7 @@ func TestNativeTokenTransfer(t *testing.T) {
 	val := big.NewInt(12345)
 	gas := uint64(21000)
 	gasPrice := uint64(1)
-	tx1 := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, &gasPrice, nil, nil, nil, &QETH)
+	tx1 := createTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, &gasPrice, nil, nil, nil, &QETH)
 	error := shardState.AddTx(tx1)
 	if error != nil {
 		t.Errorf("addTx error: %v", error)
@@ -60,7 +60,7 @@ func TestNativeTokenTransferValueSuccess(t *testing.T) {
 	val := big.NewInt(0)
 	gas := uint64(21000)
 	gasPrice := uint64(1)
-	tx1 := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc1, val, &gas, &gasPrice, nil, nil, nil, &MALICIOUS0)
+	tx1 := createTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc1, val, &gas, &gasPrice, nil, nil, nil, &MALICIOUS0)
 	error := shardState.AddTx(tx1)
 	if error != nil {
 		t.Errorf("addTx error: %v", error)
@@ -96,12 +96,12 @@ func TestDisallowedUnknownToken(t *testing.T) {
 	val := big.NewInt(0)
 	gas := uint64(21000)
 	gasPrice := uint64(1)
-	tx1 := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc1, val, &gas, &gasPrice, nil, nil, nil, &MALICIOUS0)
+	tx1 := createTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc1, val, &gas, &gasPrice, nil, nil, nil, &MALICIOUS0)
 	err := shardState.AddTx(tx1)
 	if err != nil {
 		t.Errorf("AddTx err:%v", err)
 	}
-	tx2 := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc1, val, &gas, &gasPrice, nil, nil, nil, &MALICIOUS1)
+	tx2 := createTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc1, val, &gas, &gasPrice, nil, nil, nil, &MALICIOUS1)
 	assert.Error(t, shardState.AddTx(tx2))
 }
 
@@ -117,7 +117,7 @@ func TestNativeTokenGas(t *testing.T) {
 	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	val := big.NewInt(12345)
 	gas := uint64(21000)
-	tx1 := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, nil, &QETH, &QETH)
+	tx1 := createTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, nil, &QETH, &QETH)
 	assert.NoError(t, shardState.AddTx(tx1))
 	b1, _ := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
 	assert.Equal(t, len(b1.Transactions()), 1)
@@ -151,7 +151,7 @@ func TestXshardNativeTokenSent(t *testing.T) {
 	val := big.NewInt(888888)
 	gas := new(big.Int).Add(big.NewInt(9000), big.NewInt(21000)).Uint64()
 	QKC := common.TokenIDEncode("QKC")
-	tx := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, nil, &QKC, &QETHXX)
+	tx := createTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, nil, &QKC, &QETHXX)
 	shardState.AddTx(tx)
 	b1, _ := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
 	assert.Equal(t, len(b1.Transactions()), 1)
@@ -195,7 +195,7 @@ func TestXshardNativeTokenReceived(t *testing.T) {
 	b1.Header().ParentHash = rootBlock.Header().Hash()
 	val := big.NewInt(888888)
 	gas := new(big.Int).Add(big.NewInt(9000), big.NewInt(21000)).Uint64()
-	tx := CreateTransferTransaction(shardState1, id1.GetKey().Bytes(), acc2, acc1, val, &gas, nil, nil, nil, &QKC, &QETHXX)
+	tx := createTransferTransaction(shardState1, id1.GetKey().Bytes(), acc2, acc1, val, &gas, nil, nil, nil, &QKC, &QETHXX)
 	b1.AddTx(tx)
 	deposit := types.CrossShardTransactionDeposit{TxHash: tx.Hash(), From: acc1, To: acc2, Value: &serialize.Uint256{Value: val}, GasPrice: &serialize.Uint256{Value: big.NewInt(1)}, GasTokenID: QKC, TransferTokenID: QETHXX}
 	txL := make([]*types.CrossShardTransactionDeposit, 0)
@@ -238,7 +238,7 @@ func TestXshardNativeTokenGasSent(t *testing.T) {
 	shardState.AddRootBlock(rootBlock)
 	val := big.NewInt(888888)
 	gas := new(big.Int).Add(big.NewInt(9000), big.NewInt(21000)).Uint64()
-	tx := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, nil, &QETHXX, &QETHXX)
+	tx := createTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, nil, &QETHXX, &QETHXX)
 	shardState.AddTx(tx)
 	b1, _ := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
 	assert.Equal(t, len(b1.Transactions()), 1)
@@ -284,7 +284,7 @@ func TestXshardNativeTokenGasReceived(t *testing.T) {
 	val := big.NewInt(888888)
 	gas := new(big.Int).Add(big.NewInt(9000), big.NewInt(21000)).Uint64()
 	gasPrice := uint64(2)
-	tx := CreateTransferTransaction(shardState1, id1.GetKey().Bytes(), acc2, acc1, val, &gas, &gasPrice, nil, nil, &QETHXX, &QETHXX)
+	tx := createTransferTransaction(shardState1, id1.GetKey().Bytes(), acc2, acc1, val, &gas, &gasPrice, nil, nil, &QETHXX, &QETHXX)
 	b1.AddTx(tx)
 	deposit := types.CrossShardTransactionDeposit{TxHash: tx.Hash(), From: acc1, To: acc2, Value: &serialize.Uint256{Value: val}, GasPrice: &serialize.Uint256{Value: big.NewInt(2)}, GasTokenID: QETHXX, TransferTokenID: QETHXX}
 	txL := make([]*types.CrossShardTransactionDeposit, 0)

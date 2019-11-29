@@ -177,7 +177,7 @@ func setUp(genesisAccount *account.Address, genesisMinotQuarkash *uint64, shardS
 	return env
 }
 
-func CreateTransferTransaction(
+func createTransferTransaction(
 	shardState *MinorBlockChain, key []byte,
 	fromAddress account.Address, toAddress account.Address,
 	value *big.Int, gas *uint64, gasPrice *uint64, nonce *uint64, data []byte, gasTokenID *uint64, transferTokenID *uint64,
@@ -269,7 +269,7 @@ func CreateTransferTx(shardState *MinorBlockChain, key []byte,
 		gas = new(uint64)
 		*gas = 21000
 	}
-	return CreateTransferTransaction(shardState, key, from, to, value, gas, gasPrice, nonce, nil, nil, nil)
+	return createTransferTransaction(shardState, key, from, to, value, gas, gasPrice, nonce, nil, nil, nil)
 }
 func CreateCallContractTx(shardState *MinorBlockChain, key []byte,
 	from account.Address, to account.Address, value *big.Int, gas, gasPrice, nonce *uint64, data []byte) *types.Transaction {
@@ -281,7 +281,7 @@ func CreateCallContractTx(shardState *MinorBlockChain, key []byte,
 		gas = new(uint64)
 		*gas = 21000
 	}
-	return CreateTransferTransaction(shardState, key, from, to, value, gas, gasPrice, nonce, data, nil, nil)
+	return createTransferTransaction(shardState, key, from, to, value, gas, gasPrice, nonce, data, nil, nil)
 }
 
 func GetPoSW(chain *MinorBlockChain) *posw.PoSW {
