@@ -28,7 +28,7 @@ import (
 
 func TestShardStateSimple(t *testing.T) {
 	env := setUp(nil, nil, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	if shardState.rootTip.Number != 0 {
 		t.Errorf("rootTip number mismatch have:%v want:%v", shardState.rootTip.Number, 0)
@@ -45,7 +45,7 @@ func TestShardStateSimple(t *testing.T) {
 func TestInitGenesisState(t *testing.T) {
 	env := setUp(nil, nil, nil)
 
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	genesisHeader := shardState.CurrentBlock().IHeader().(*types.MinorBlockHeader)
 	fakeNonce := uint64(1234)
@@ -98,17 +98,17 @@ func TestGasPrice(t *testing.T) {
 		accList = append(accList, account.CreatAddressFromIdentity(v, 0))
 	}
 
-	TestGenesisMinorTokenBalance = map[string]*big.Int{
+	testGenesisMinorTokenBalance = map[string]*big.Int{
 		"QKC": new(big.Int).SetUint64(100000000),
 		"QI":  new(big.Int).SetUint64(100000000),
 		"BTC": new(big.Int).SetUint64(100000000),
 	}
 	defer func() {
-		TestGenesisMinorTokenBalance = make(map[string]*big.Int)
+		testGenesisMinorTokenBalance = make(map[string]*big.Int)
 	}()
 	fakeData := uint64(100000000)
 	env := setUp(&accList[0], &fakeData, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	fakeChan := make(chan uint64, 100)
 	shardState.txPool.fakeChanForReset = fakeChan
 	defer shardState.Stop()
@@ -222,7 +222,7 @@ func TestEstimateGas(t *testing.T) {
 
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -251,7 +251,7 @@ func TestExecuteTx(t *testing.T) {
 	checkErr(err)
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
@@ -276,7 +276,7 @@ func TestAddTxIncorrectFromShardID(t *testing.T) {
 	checkErr(err)
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// state is shard 0 but tx from shard 1
 	tx := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, new(big.Int).SetUint64(12345), nil, nil, nil, nil, nil, nil)
@@ -295,7 +295,7 @@ func TestOneTx(t *testing.T) {
 
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -386,7 +386,7 @@ func TestDuplicatedTx(t *testing.T) {
 	acc3, err := account.CreatRandomAccountWithFullShardKey(0)
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -445,7 +445,7 @@ func TestAddInvalidTxFail(t *testing.T) {
 	acc2, err := account.CreatRandomAccountWithFullShardKey(0)
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	fakeValue := new(big.Int).Mul(jiaozi, new(big.Int).SetUint64(100))
 	fakeMoey := new(big.Int).Sub(fakeValue, new(big.Int).SetUint64(1))
@@ -469,7 +469,7 @@ func TestAddNonNeighborTxFail(t *testing.T) {
 	fakeShardSize := uint32(64)
 	env := setUp(&acc1, &fakeMoney, &fakeShardSize)
 
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -504,7 +504,7 @@ func TestExceedingXShardLimit(t *testing.T) {
 	// a huge number to make xshard tx limit become 0 so that no xshard tx can be
 	// included in the block
 	env.clusterConfig.Quarkchain.MaxNeighbors = 4294967295
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -544,7 +544,7 @@ func TestTwoTxInOneBlock(t *testing.T) {
 
 	fakeQuarkHash := uint64(2000000 + 21000)
 	env := setUp(&acc1, &fakeQuarkHash, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	fakeChan := make(chan uint64, 100)
 	shardState.txPool.fakeChanForReset = fakeChan
@@ -666,7 +666,7 @@ func TestForkDoesNotConfirmTx(t *testing.T) {
 	acc3, err := account.CreatRandomAccountWithFullShardKey(0)
 	newGenesisMinorQuarkash := uint64(2021000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 
 	fakeChain := make(chan uint64, 100)
 	shardState.txPool.fakeChanForReset = fakeChain
@@ -723,7 +723,7 @@ func TestRevertForkPutTxBackToQueue(t *testing.T) {
 	acc3, err := account.CreatRandomAccountWithFullShardKey(0)
 	newGenesisMinorQuarkash := uint64(2021000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 
 	fakeChain := make(chan uint64, 100)
@@ -786,7 +786,7 @@ func TestStaleBlockCount(t *testing.T) {
 	checkErr(err)
 	fakeQuarkash := uint64(10000000)
 	env := setUp(&acc1, &fakeQuarkash, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	b1, err := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
 	checkErr(err)
@@ -815,10 +815,10 @@ func TestXShardTxSent(t *testing.T) {
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	env.clusterConfig.Quarkchain.EnableEvmTimeStamp = 15695676000
 	id := uint32(0)
-	shardState := CreateDefaultShardState(env, &id, nil, nil, nil)
+	shardState := createDefaultShardState(env, &id, nil, nil, nil)
 	env1 := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	id = uint32(1)
-	shardState1 := CreateDefaultShardState(env1, &id, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &id, nil, nil, nil)
 
 	// Add a root block to update block gas limit so that xshard tx can be included
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil)
@@ -873,7 +873,7 @@ func TestXShardTxInsufficientGas(t *testing.T) {
 	newGenesisMinorQuarkash := uint64(10000000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	id := uint32(0)
-	shardState := CreateDefaultShardState(env, &id, nil, nil, nil)
+	shardState := createDefaultShardState(env, &id, nil, nil, nil)
 
 	fakeGas := uint64(21000)
 	err = shardState.AddTx(CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, new(big.Int).SetUint64(888888), &fakeGas, nil, nil, nil, nil, nil))
@@ -897,9 +897,9 @@ func TestXShardTxReceived(t *testing.T) {
 	env := setUp(&acc1, &newGenesisMinorQuarkash, &fakeShardSize)
 	env1 := setUp(&acc1, &newGenesisMinorQuarkash, &fakeShardSize)
 	fakeID := uint32(0)
-	shardState0 := CreateDefaultShardState(env, &fakeID, nil, nil, nil)
+	shardState0 := createDefaultShardState(env, &fakeID, nil, nil, nil)
 	fakeID = uint32(16)
-	shardState1 := CreateDefaultShardState(env1, &fakeID, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &fakeID, nil, nil, nil)
 	// Add a root block to allow later minor blocks referencing this root block to
 	// be broadcasted
 	rootBlock := shardState0.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil)
@@ -980,9 +980,9 @@ func TestXShardTxReceivedExcludeNonNeighbor(t *testing.T) {
 	env1 := setUp(&acc1, &newGenesisMinorQuarkash, &fakeShardSize)
 
 	fakeShardID := uint32(0)
-	shardState0 := CreateDefaultShardState(env0, &fakeShardID, nil, nil, nil)
+	shardState0 := createDefaultShardState(env0, &fakeShardID, nil, nil, nil)
 	fakeShardID = uint32(3)
-	shardState1 := CreateDefaultShardState(env1, &fakeShardID, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &fakeShardID, nil, nil, nil)
 	b0 := shardState0.CurrentBlock()
 	b1 := shardState1.CurrentBlock().CreateBlockToAppend(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
@@ -1031,10 +1031,10 @@ func TestXShardForTwoRootBlocks(t *testing.T) {
 	env1 := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 
 	fakeShardID := uint32(0)
-	shardState0 := CreateDefaultShardState(env0, &fakeShardID, nil, nil, nil)
+	shardState0 := createDefaultShardState(env0, &fakeShardID, nil, nil, nil)
 	shardState0.clusterConfig.Quarkchain.MinMiningGasPrice = new(big.Int)
 	fakeShardID = uint32(1)
-	shardState1 := CreateDefaultShardState(env1, &fakeShardID, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &fakeShardID, nil, nil, nil)
 	shardState1.clusterConfig.Quarkchain.MinMiningGasPrice = new(big.Int)
 
 	// Add a root block to allow later minor blocks referencing this root block to
@@ -1162,7 +1162,7 @@ func TestForkResolve(t *testing.T) {
 
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	fakeID := uint32(0)
-	shardState := CreateDefaultShardState(env, &fakeID, nil, nil, nil)
+	shardState := createDefaultShardState(env, &fakeID, nil, nil, nil)
 	b0 := shardState.CurrentBlock().CreateBlockToAppend(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	b1 := shardState.CurrentBlock().CreateBlockToAppend(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
@@ -1191,9 +1191,9 @@ func TestRootChainFirstConsensus(t *testing.T) {
 	env0 := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	env1 := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	fakeID := uint32(0)
-	shardState0 := CreateDefaultShardState(env0, &fakeID, nil, nil, nil)
+	shardState0 := createDefaultShardState(env0, &fakeID, nil, nil, nil)
 	fakeID = uint32(1)
-	shardState1 := CreateDefaultShardState(env1, &fakeID, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &fakeID, nil, nil, nil)
 	genesis := shardState0.CurrentBlock()
 	emptyAddress := account.CreatEmptyAddress(0)
 	// Add one block and prepare a fork
@@ -1247,9 +1247,9 @@ func TestShardStateAddRootBlock(t *testing.T) {
 	env0 := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	env1 := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	fakeID := uint32(0)
-	shardState0 := CreateDefaultShardState(env0, &fakeID, nil, nil, nil)
+	shardState0 := createDefaultShardState(env0, &fakeID, nil, nil, nil)
 	fakeID = uint32(1)
-	shardState1 := CreateDefaultShardState(env1, &fakeID, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &fakeID, nil, nil, nil)
 	genesis := shardState0.CurrentBlock()
 	emptyAddress := account.CreatEmptyAddress(0)
 	// Add one block and prepare a fork
@@ -1345,7 +1345,7 @@ func TestShardStateAddRootBlockTooManyMinorBlocks(t *testing.T) {
 	env := setUp(&acc1, &newGenesisMinorQuarkash, &fakeShardSize)
 
 	fakeID := uint32(0)
-	shardState := CreateDefaultShardState(env, &fakeID, nil, nil, nil)
+	shardState := createDefaultShardState(env, &fakeID, nil, nil, nil)
 	headers := make([]*types.MinorBlockHeader, 0)
 	headers = append(headers, shardState.CurrentBlock().Header())
 
@@ -1385,7 +1385,7 @@ func TestShardStateForkResolveWithHigherRootChain(t *testing.T) {
 	newGenesisMinorQuarkash := uint64(10000000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	fakeShardID := uint32(0)
-	shardState := CreateDefaultShardState(env, &fakeShardID, nil, nil, nil)
+	shardState := createDefaultShardState(env, &fakeShardID, nil, nil, nil)
 
 	b0 := shardState.CurrentBlock()
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil)
@@ -1440,7 +1440,7 @@ func TestShardStateDifficulty(t *testing.T) {
 	fakeShardID := uint32(0)
 
 	flagEngine := true
-	shardState := CreateDefaultShardState(env, &fakeShardID, diffCalc, nil, &flagEngine)
+	shardState := createDefaultShardState(env, &fakeShardID, diffCalc, nil, &flagEngine)
 
 	createTime := shardState.CurrentBlock().Header().GetTime() + 8
 	// Check new difficulty
@@ -1478,7 +1478,7 @@ func TestShardStateRecoveryFromRootBlock(t *testing.T) {
 	newGenesisMinorQuarkash := uint64(10000000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	fakeShardID := uint32(0)
-	shardState := CreateDefaultShardState(env, &fakeShardID, nil, nil, nil)
+	shardState := createDefaultShardState(env, &fakeShardID, nil, nil, nil)
 
 	blockHeaders := make([]*types.MinorBlockHeader, 0)
 	blockMetas := make([]*types.MinorBlockMeta, 0)
@@ -1536,7 +1536,7 @@ func TestShardStateTecoveryFromGenesis(t *testing.T) {
 	newGenesisMinorQuarkash := uint64(10000000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	fakeShardID := uint32(0)
-	shardState := CreateDefaultShardState(env, &fakeShardID, nil, nil, nil)
+	shardState := createDefaultShardState(env, &fakeShardID, nil, nil, nil)
 
 	blockHeaders := make([]*types.MinorBlockHeader, 0)
 	blockMetas := make([]*types.MinorBlockMeta, 0)
@@ -1595,7 +1595,7 @@ func TestAddBlockReceiptRootNotMatch(t *testing.T) {
 	acc3 := account.CreatEmptyAddress(0)
 	newGenesisMinorQuarkash := uint64(10000000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 
 	b1, err := shardState.CreateBlockToMine(nil, &acc3, nil, nil, nil)
 	checkErr(err)
@@ -1643,7 +1643,7 @@ func TestNotUpdateTipOnRootFork(t *testing.T) {
 	newGenesisMinorQuarkash := uint64(10000000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	fakeShardID := uint32(0)
-	shardState := CreateDefaultShardState(env, &fakeShardID, nil, nil, nil)
+	shardState := createDefaultShardState(env, &fakeShardID, nil, nil, nil)
 
 	// m1 is the genesis block
 	m1 := shardState.GetBlockByNumber(0)
@@ -1706,7 +1706,7 @@ func TestAddRootBlockRevertHeaderTip(t *testing.T) {
 	newGenesisMinorQuarkash := uint64(10000000)
 	env := setUp(&acc1, &newGenesisMinorQuarkash, nil)
 	fakeShardID := uint32(0)
-	shardState := CreateDefaultShardState(env, &fakeShardID, nil, nil, nil)
+	shardState := createDefaultShardState(env, &fakeShardID, nil, nil, nil)
 
 	// m1 is the genesis block
 	m1 := shardState.GetBlockByNumber(0)
@@ -1758,7 +1758,7 @@ func TestTotalTxCount(t *testing.T) {
 
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -1820,7 +1820,7 @@ func TestGetPendingTxFromAddress(t *testing.T) {
 
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 
 	fakeChan := make(chan uint64, 100)
@@ -1881,7 +1881,7 @@ func TestResetToOldChain(t *testing.T) {
 
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 
 	// Add a root block to have all the shards initialized
@@ -1932,7 +1932,7 @@ func TestContractCall(t *testing.T) {
 	storageKey := crypto.Keccak256Hash(storageKeyBytes)
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -1986,10 +1986,10 @@ func TestXShardRootBlockCoinbase(t *testing.T) {
 	shardId0 := uint32(0)
 	shardId := uint32(16)
 	env1 := setUp(&acc1, &genesis, &shardSize)
-	shardState1 := CreateDefaultShardState(env1, &shardId0, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &shardId0, nil, nil, nil)
 	shardState1.shardConfig.Genesis.GasLimit = params.GtxxShardCost.Uint64() * 2
 	env2 := setUp(&acc2, &genesis, &shardSize)
-	shardState2 := CreateDefaultShardState(env2, &shardId, nil, nil, nil)
+	shardState2 := createDefaultShardState(env2, &shardId, nil, nil, nil)
 	shardState2.shardConfig.Genesis.GasLimit = params.GtxxShardCost.Uint64() * 2
 	defer func() {
 		shardState1.Stop()
@@ -2046,7 +2046,7 @@ func TestXShardSenderGasLimit(t *testing.T) {
 	shardSize := uint32(64)
 	shardId0 := uint32(0)
 	env1 := setUp(&acc1, &genesis, &shardSize)
-	shardState1 := CreateDefaultShardState(env1, &shardId0, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &shardId0, nil, nil, nil)
 	defer shardState1.Stop()
 
 	rootBlock := shardState1.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil)
@@ -2101,9 +2101,9 @@ func TestXShardGasLimit(t *testing.T) {
 	shardId0 := uint32(0)
 	shardId := uint32(16)
 	env1 := setUp(&acc1, &genesis, &shardSize)
-	shardState1 := CreateDefaultShardState(env1, &shardId0, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &shardId0, nil, nil, nil)
 	env2 := setUp(&acc2, &genesis, &shardSize)
-	shardState2 := CreateDefaultShardState(env2, &shardId, nil, nil, nil)
+	shardState2 := createDefaultShardState(env2, &shardId, nil, nil, nil)
 	defer func() {
 		shardState1.Stop()
 		shardState2.Stop()
@@ -2274,9 +2274,9 @@ func TestXShardTxReceivedDDOSFix(t *testing.T) {
 	shardId0 := uint32(0)
 	shardId := uint32(16)
 	env1 := setUp(&acc1, &genesis, &shardSize)
-	state0 := CreateDefaultShardState(env1, &shardId0, nil, nil, nil)
+	state0 := createDefaultShardState(env1, &shardId0, nil, nil, nil)
 	env2 := setUp(&acc2, &genesis, &shardSize)
-	state1 := CreateDefaultShardState(env2, &shardId, nil, nil, nil)
+	state1 := createDefaultShardState(env2, &shardId, nil, nil, nil)
 	defer func() {
 		state0.Stop()
 		state1.Stop()
@@ -2373,7 +2373,7 @@ func TestXShardFromRootBlock(t *testing.T) {
 	shardSize := uint32(2)
 	shardId0 := uint32(0)
 	env1 := setUp(&acc1, &genesis, &shardSize)
-	state0 := CreateDefaultShardState(env1, &shardId0, nil, nil, nil)
+	state0 := createDefaultShardState(env1, &shardId0, nil, nil, nil)
 	defer state0.Stop()
 
 	//Create a root block containing the block with the x-shard tx
@@ -2402,7 +2402,7 @@ func TestXShardFromRootBlockWithCoinbaseIsCode(t *testing.T) {
 	shardSize := uint32(2)
 	shardId0 := uint32(0)
 	env1 := setUp(&acc1, &genesis, &shardSize)
-	state0 := CreateDefaultShardState(env1, &shardId0, nil, nil, nil)
+	state0 := createDefaultShardState(env1, &shardId0, nil, nil, nil)
 	defer state0.Stop()
 
 	olderHeaderTip := state0.CurrentBlock().Header()
@@ -2442,7 +2442,7 @@ func TestTransferToContract(t *testing.T) {
 	shardSize := uint32(2)
 	shardId0 := uint32(0)
 	env1 := setUp(&acc1, &genesis, &shardSize)
-	state0 := CreateDefaultShardState(env1, &shardId0, nil, nil, nil)
+	state0 := createDefaultShardState(env1, &shardId0, nil, nil, nil)
 	defer state0.Stop()
 	//need a payable function in contract to receive money
 	tx, err := CreateContract(state0, id1.GetKey(), acc1, 0, ContractCreationByteCodePayable)
@@ -2494,9 +2494,9 @@ func TestGetTxForJsonRpc(t *testing.T) {
 	env := setUp(&acc1, &newGenesisMinorQuarkash, &fakeShardSize)
 	env1 := setUp(&acc1, &newGenesisMinorQuarkash, &fakeShardSize)
 	fakeID := uint32(0)
-	shardState0 := CreateDefaultShardState(env, &fakeID, nil, nil, nil)
+	shardState0 := createDefaultShardState(env, &fakeID, nil, nil, nil)
 	fakeID = uint32(16)
-	shardState1 := CreateDefaultShardState(env1, &fakeID, nil, nil, nil)
+	shardState1 := createDefaultShardState(env1, &fakeID, nil, nil, nil)
 	// Add a root block to allow later minor blocks referencing this root block to
 	// be broadcasted
 	rootBlock := shardState0.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil)
@@ -2632,7 +2632,7 @@ func TestReorg(t *testing.T) {
 
 	fakeMoney := uint64(10000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 
 	// Add a root block to have all the shards initialized
@@ -2713,7 +2713,7 @@ func TestGetRootChainStakes(t *testing.T) {
 			Balances: balance,
 		},
 	}
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 
 	//contract deployed, but no stakes. signer defaults to the recipient
@@ -2858,7 +2858,7 @@ func TestSigToAddr(t *testing.T) {
 	shardSize := uint32(2)
 	shardId0 := uint32(0)
 	env1 := setUp(&acc1, &genesis, &shardSize)
-	state0 := CreateDefaultShardState(env1, &shardId0, nil, nil, nil)
+	state0 := createDefaultShardState(env1, &shardId0, nil, nil, nil)
 	defer state0.Stop()
 
 	var rootBlock *types.RootBlock
@@ -2877,7 +2877,7 @@ func TestSigToAddr(t *testing.T) {
 
 func TestBlocksWithIncorrectVersion(t *testing.T) {
 	env := GetTestEnv(nil, nil, nil, nil, nil, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
 	rootBlock.Header().Version = 1
 	_, err := shardState.AddRootBlock(rootBlock.Finalize(nil, nil, common.Hash{}))
@@ -2908,7 +2908,7 @@ func TestEnablEvmTimestampWithContractCall(t *testing.T) {
 	acc2 := account.CreatEmptyAddress(0)
 	a := big.NewInt(10000000).Uint64()
 	env := GetTestEnv(&acc1, &a, nil, nil, nil, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
 	shardState.AddRootBlock(rootBlock)
 	val := big.NewInt(12345)
@@ -2935,7 +2935,7 @@ func TestEnableEvmTimestampWithContractCreate(t *testing.T) {
 	acc1 := account.CreatAddressFromIdentity(id1, 0)
 	a := big.NewInt(10000000).Uint64()
 	env := GetTestEnv(&acc1, &a, nil, nil, nil, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
 	shardState.AddRootBlock(rootBlock)
 	tx, err := CreateContract(shardState, id1.GetKey(), acc1, 0, "")
@@ -2962,7 +2962,7 @@ func TestEnableTxTimestamp(t *testing.T) {
 	acc3 := account.CreatEmptyAddress(0)
 	a := big.NewInt(10000000).Uint64()
 	env := GetTestEnv(&acc1, &a, nil, nil, nil, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
 	shardState.AddRootBlock(rootBlock)
 	val := big.NewInt(5000000)
@@ -3004,9 +3004,9 @@ func TestFailedTransactionGas(t *testing.T) {
 	id1, _ := account.CreatRandomIdentity()
 	acc1 := account.CreatAddressFromIdentity(id1, 0)
 	acc2 := account.CreatEmptyAddress(0)
-	TestGenesisMinorTokenBalance["QKC"] = testShardCoinbaseAmount2
+	testGenesisMinorTokenBalance["QKC"] = testShardCoinbaseAmount2
 	env := GetTestEnv(&acc1, nil, nil, nil, nil, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	//Create failed contract with revert operation
 	/**
 	pragma solidity ^0.5.1;
@@ -3034,11 +3034,46 @@ func TestFailedTransactionGas(t *testing.T) {
 }
 
 func TestIncorrectCoinbaseAmount(t *testing.T) {
-
+	QKC := qkcCommon.TokenIDEncode("QKC")
+	env := GetTestEnv(nil, nil, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
+	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
+	shardState.AddRootBlock(rootBlock)
+	b, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	evmState, _, _, _, _, _ := shardState.runBlock(b)
+	b.Finalize(nil, emptyHash, evmState.GetGasUsed(), evmState.GetXShardReceiveGasUsed(), shardState.getCoinbaseAmount(b.Header().Number), evmState.GetTxCursorInfo())
+	shardState.AddBlock(b)
+	b, _ = shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	wrong_coinbase := shardState.getCoinbaseAmount(b.Header().Number)
+	m := make(map[uint64]*big.Int)
+	m[QKC] = new(big.Int).Add(new(big.Int).SetUint64(QKC), big.NewInt(1))
+	b.Finalize(nil, emptyHash, evmState.GetGasUsed(), evmState.GetXShardReceiveGasUsed(), wrong_coinbase, evmState.GetTxCursorInfo())
+	err := shardState.AddBlock(b)
+	if err != nil {
+		t.Errorf("AddBlock err:%v", err)
+	}
 }
 
 func TestShardCoinbaseDecay(t *testing.T) {
-
+	env := GetTestEnv(nil, nil, nil, nil, nil, nil)
+	QKC := qkcCommon.TokenIDEncode(env.clusterConfig.Quarkchain.GenesisToken)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
+	coinbase := shardState.getCoinbaseAmount(shardState.shardConfig.EpochInterval)
+	m := make(map[uint64]*big.Int)
+	a := new(big.Rat).Mul(env.clusterConfig.Quarkchain.BlockRewardDecayFactor, env.clusterConfig.Quarkchain.RewardTaxRate)
+	m[QKC] = new(big.Int).Mul(shardState.shardConfig.CoinbaseAmount, a.Num())
+	assert.Equal(t, m, coinbase.GetBalanceMap())
+	coinbase = shardState.getCoinbaseAmount(shardState.shardConfig.EpochInterval + 1)
+	m1 := make(map[uint64]*big.Int)
+	a1 := new(big.Rat).Mul(env.clusterConfig.Quarkchain.BlockRewardDecayFactor, env.clusterConfig.Quarkchain.RewardTaxRate)
+	m[QKC] = new(big.Int).Mul(shardState.shardConfig.CoinbaseAmount, a1.Num())
+	assert.Equal(t, m1, coinbase.GetBalanceMap())
+	coinbase = shardState.getCoinbaseAmount(shardState.shardConfig.EpochInterval * 2)
+	m2 := make(map[uint64]*big.Int)
+	sq := new(big.Rat).Mul(env.clusterConfig.Quarkchain.BlockRewardDecayFactor, env.clusterConfig.Quarkchain.BlockRewardDecayFactor)
+	a2 := new(big.Rat).Mul(sq, env.clusterConfig.Quarkchain.RewardTaxRate)
+	m[QKC] = new(big.Int).Mul(shardState.shardConfig.CoinbaseAmount, a2.Num())
+	assert.Equal(t, m2, coinbase.GetBalanceMap())
 }
 
 func TestShardReorgByAddingRootBlock(t *testing.T) {

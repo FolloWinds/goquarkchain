@@ -38,7 +38,7 @@ func TestGetLog(t *testing.T) {
 
 	fakeMoney := uint64(100000000000000000)
 	env := setUp(&acc1, &fakeMoney, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	defer shardState.Stop()
 	// Add a root block to have all the shards initialized
 	rootBlock := shardState.rootTip.CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, common.Hash{})
@@ -169,7 +169,7 @@ func TestBloomBits(t *testing.T) {
 	acc1 := account.CreatAddressFromIdentity(id1, 0)
 	genesisMinorQuarkash := uint64(100000000000)
 	env := setUp(&acc1, &genesisMinorQuarkash, nil)
-	shardState := CreateDefaultShardState(env, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
 	tx, err := CreateContract(shardState, id1.GetKey(), acc1, acc1.FullShardKey, ContractCreationByteCode)
 
 	if err != nil {

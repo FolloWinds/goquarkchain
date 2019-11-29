@@ -27,7 +27,7 @@ var (
 	jiaozi                       = new(big.Int).Mul(new(big.Int).SetUint64(1000000000), new(big.Int).SetUint64(1000000000))
 	testShardCoinbaseAmount      = new(big.Int).Mul(new(big.Int).SetUint64(5), jiaozi)
 	testGenesisTokenID           = common.TokenIDEncode("QKC")
-	TestGenesisMinorTokenBalance = make(map[string]*big.Int)
+	testGenesisMinorTokenBalance = make(map[string]*big.Int)
 )
 
 type fakeEnv struct {
@@ -110,8 +110,8 @@ func GetTestEnv(genesisAccount *account.Address, genesisMinorQuarkHash *uint64, 
 	for _, v := range ids {
 		addr := genesisAccount.AddressInShard(v)
 		shardConfig := fakeClusterConfig.Quarkchain.GetShardConfigByFullShardID(v)
-		if len(TestGenesisMinorTokenBalance) != 0 {
-			shardConfig.Genesis.Alloc[addr] = config.Allocation{Balances: TestGenesisMinorTokenBalance}
+		if len(testGenesisMinorTokenBalance) != 0 {
+			shardConfig.Genesis.Alloc[addr] = config.Allocation{Balances: testGenesisMinorTokenBalance}
 			continue
 		}
 		temp := make(map[string]*big.Int)
@@ -123,7 +123,7 @@ func GetTestEnv(genesisAccount *account.Address, genesisMinorQuarkHash *uint64, 
 	return env
 }
 
-func CreateDefaultShardState(env *fakeEnv, shardID *uint32, diffCalc consensus.DifficultyCalculator, poswOverride *bool, flagEngine *bool) *MinorBlockChain {
+func createDefaultShardState(env *fakeEnv, shardID *uint32, diffCalc consensus.DifficultyCalculator, poswOverride *bool, flagEngine *bool) *MinorBlockChain {
 	if shardID == nil {
 		temp := uint32(0)
 		shardID = &temp
@@ -255,7 +255,7 @@ func CreateFakeMinorCanonicalPoSW(acc1 account.Address, shardId *uint32, genesis
 	}
 	poswFlag := true
 	engineFlag := true
-	shardState := CreateDefaultShardState(env, shardId, diffCalculator, &poswFlag, &engineFlag)
+	shardState := createDefaultShardState(env, shardId, diffCalculator, &poswFlag, &engineFlag)
 	return shardState, nil
 }
 
