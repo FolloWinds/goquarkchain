@@ -3076,7 +3076,6 @@ func TestShardCoinbaseDecay(t *testing.T) {
 	assert.Equal(t, m2, coinbase.GetBalanceMap())
 }
 func (m *MinorBlockChain) getTip() *types.MinorBlock {
-
 	return m.GetMinorBlock(m.CurrentHeader().Hash())
 }
 func TestShardReorgByAddingRootBlock(t *testing.T) {
@@ -3116,9 +3115,132 @@ func TestShardReorgByAddingRootBlock(t *testing.T) {
 }
 
 func TestSkipUnderPricedTxToBlock(t *testing.T) {
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	acc2 := account.CreatEmptyAddress(0)
+	a := big.NewInt(10000000).Uint64()
+	env := GetTestEnv(&acc1, &a, nil, nil, nil, nil)
+	env.clusterConfig.Quarkchain.MinMiningGasPrice = big.NewInt(10)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
+	// Add a root block to have all the shards initialized
+	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil).Finalize(nil, nil, emptyHash)
+	shardState.AddRootBlock(rootBlock)
+	//Under-priced
+	gas := big.NewInt(50000).Uint64()
+	val := big.NewInt(12345)
+	tx := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, nil, nil, []byte("1234"), nil, nil)
+	error := shardState.AddTx(tx)
+	if error != nil {
+		t.Errorf("addTx error: %v", error)
+	}
+	b1, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b1.Transactions()), 1)
+	//self.assertEqual(len(state.tx_queue), 0)   ???
 
+	//# Qualified
+	gasPrice := big.NewInt(11).Uint64()
+	tx1 := CreateTransferTransaction(shardState, id1.GetKey().Bytes(), acc1, acc2, val, &gas, &gasPrice, nil, []byte("1234"), nil, nil)
+	error = shardState.AddTx(tx1)
+	if error != nil {
+		t.Errorf("addTx error: %v", error)
+	}
+	b2, _ := shardState.CreateBlockToMine(nil, nil, nil, nil, nil)
+	assert.Equal(t, len(b2.Transactions()), 1)
+	//self.assertEqual(len(state.tx_queue), 1)  ???
 }
 
 func TestXshardGasLimitFromMultipleShards(t *testing.T) {
+	QKC := qkcCommon.TokenIDEncode("QKC")
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	acc2 := account.CreatAddressFromIdentity(id1, 16)
+	acc3 := account.CreatAddressFromIdentity(id1, 8)
+	a := big.NewInt(10000000).Uint64()
+	shardSize := uint32(64)
+	env0 := GetTestEnv(&acc1, &a, nil, &shardSize, nil, nil)
+	env1 := GetTestEnv(&acc1, &a, nil, &shardSize, nil, nil)
+	shardId0 := uint32(0)
+	shardState0 := createDefaultShardState(env0, &shardId0, nil, nil, nil)
+	shardId1 := uint32(16)
+	shardState1 := createDefaultShardState(env1, &shardId1, nil, nil, nil)
+	shardId2 := uint32(8)
+	shardState2 := createDefaultShardState(env1, &shardId2, nil, nil, nil)
 
+	// Add
+	//	Add a root block to allow later minor blocks referencing this root block to
+	//	be broadcasted
+	rootBlock := shardState0.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
+	rootBlock.AddMinorBlockHeader(shardState0.CurrentBlock().Header())
+	rootBlock.AddMinorBlockHeader(shardState1.CurrentBlock().Header())
+	rootBlock.AddMinorBlockHeader(shardState2.CurrentBlock().Header())
+	rootBlock.Finalize(nil, nil, emptyHash)
+	shardState0.AddRootBlock(rootBlock)
+	shardState1.AddRootBlock(rootBlock)
+	shardState2.AddRootBlock(rootBlock)
+	//	Add one block in shard 1 with 2 x-shard txs
+	b1 := shardState0.getTip().CreateBlockToAppend(nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	b1.Header().PrevRootBlockHash = rootBlock.Header().Hash()
+	val := big.NewInt(888888)
+	gas := new(big.Int).Add(big.NewInt(21000), big.NewInt(9000)).Uint64()
+	gasPrice := uint64(2)
+	tx0 := CreateTransferTransaction(shardState1, id1.GetKey().Bytes(), acc1, acc2, val, &gas, &gasPrice, nil, []byte("1234"), nil, nil)
+	b1.AddTx(tx0)
+	val1 := big.NewInt(111111)
+	gas1 := new(big.Int).Add(big.NewInt(21000), big.NewInt(9000)).Uint64()
+	gasPrice1 := uint64(2)
+	tx1 := CreateTransferTransaction(shardState1, id1.GetKey().Bytes(), acc2, acc1, val1, &gas1, &gasPrice1, nil, []byte("1234"), nil, nil)
+	b1.AddTx(tx1)
+	//	# Add a x-shard tx from remote peer
+	deposit := types.CrossShardTransactionDeposit{TxHash: tx0.Hash(), From: acc2, To: acc1, Value: &serialize.Uint256{Value: big.NewInt(888888)}, GasPrice: &serialize.Uint256{Value: big.NewInt(2)}, GasTokenID: QKC, TransferTokenID: QKC}
+	deposit2 := types.CrossShardTransactionDeposit{TxHash: tx1.Hash(), From: acc2, To: acc1, Value: &serialize.Uint256{Value: big.NewInt(111111)}, GasPrice: &serialize.Uint256{Value: big.NewInt(2)}, GasTokenID: QKC, TransferTokenID: QKC}
+	txL := make([]*types.CrossShardTransactionDeposit, 0)
+	txL = append(txL, &deposit, &deposit2)
+	txList := types.CrossShardTransactionDepositList{TXList: txL}
+	shardState0.AddCrossShardTxListByMinorBlockHash(b1.Header().Hash(), txList)
+	//	# Add one block in shard 1 with 2 x-shard txs
+	b2 := shardState2.getTip().CreateBlockToAppend(nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	b2.Header().PrevRootBlockHash = rootBlock.Header().Hash()
+	val2 := big.NewInt(12345)
+	gas2 := new(big.Int).Add(big.NewInt(21000), big.NewInt(9000)).Uint64()
+	gasPrice2 := uint64(2)
+	tx3 := CreateTransferTransaction(shardState1, id1.GetKey().Bytes(), acc2, acc1, val2, &gas2, &gasPrice2, nil, []byte("1234"), nil, nil)
+	b2.AddTx(tx3)
+	//	# Add a x-shard tx from remote peer
+	deposit = types.CrossShardTransactionDeposit{TxHash: tx3.Hash(), From: acc3, To: acc1, Value: &serialize.Uint256{Value: big.NewInt(12345)}, GasPrice: &serialize.Uint256{Value: big.NewInt(2)}, GasTokenID: QKC, TransferTokenID: QKC}
+	txL = make([]*types.CrossShardTransactionDeposit, 0)
+	txL = append(txL, &deposit)
+	txList = types.CrossShardTransactionDepositList{TXList: txL}
+	shardState0.AddCrossShardTxListByMinorBlockHash(b2.Header().Hash(), txList)
+	//	# Create a root block containing the block with the x-shard tx
+	rootBlock = shardState0.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
+	rootBlock.AddMinorBlockHeader(shardState1.CurrentBlock().Header())
+	rootBlock.AddMinorBlockHeader(shardState2.CurrentBlock().Header())
+	coinbase := types.NewEmptyTokenBalances()
+	coinbase.SetValue(big.NewInt(1000000), qkcCommon.TokenIDEncode("QKC"))
+	rootBlock.Finalize(coinbase, &acc1, emptyHash)
+	shardState0.AddRootBlock(rootBlock)
+	//	# Add b0 and make sure one x-shard tx's are added
+	xShardGasLimit := big.NewInt(9000)
+	b2, _ = shardState0.CreateBlockToMine(nil, nil, nil, xShardGasLimit, nil)
+	shardState0.FinalizeAndAddBlock(b2)
+	//	# Root block coinbase does not consume xshard gas
+	tb, _ := shardState0.GetBalance(acc1.Recipient, &emptyHash)
+	assert.Equal(t, tb.GetTokenBalance(QKC), big.NewInt(10000000+1000000+12345))
+	//	# X-shard gas used
+	evmState0 := shardState0.currentEvmState
+	assert.Equal(t, evmState0.GetXShardReceiveGasUsed(), big.NewInt(9000))
+	//	# Add b2 and make sure all x-shard tx's are added
+	xShardGasLimit1 := big.NewInt(9000)
+	b2, _ = shardState0.CreateBlockToMine(nil, nil, nil, xShardGasLimit1, nil)
+	shardState0.FinalizeAndAddBlock(b2)
+	//	# Root block coinbase does not consume xshard gas
+	tb, _ = shardState0.GetBalance(acc1.Recipient, &emptyHash)
+	assert.Equal(t, tb.GetTokenBalance(QKC), big.NewInt(10000000+1000000+12345+888888))
+	//	# Add b3 and make sure no x-shard tx's are added
+	xShardGasLimit1 = big.NewInt(9000)
+	b3, _ := shardState0.CreateBlockToMine(nil, nil, nil, xShardGasLimit1, nil)
+	shardState0.FinalizeAndAddBlock(b3)
+	//	# Root block coinbase does not consume xshard gas
+	tb, _ = shardState0.GetBalance(acc1.Recipient, &emptyHash)
+	assert.Equal(t, tb.GetTokenBalance(QKC), big.NewInt(10000000+1000000+12345+888888+111111))
 }
