@@ -3075,9 +3075,44 @@ func TestShardCoinbaseDecay(t *testing.T) {
 	m[QKC] = new(big.Int).Mul(shardState.shardConfig.CoinbaseAmount, a2.Num())
 	assert.Equal(t, m2, coinbase.GetBalanceMap())
 }
+func (m *MinorBlockChain) getTip() *types.MinorBlock {
 
+	return m.GetMinorBlock(m.CurrentHeader().Hash())
+}
 func TestShardReorgByAddingRootBlock(t *testing.T) {
-
+	id1, _ := account.CreatRandomIdentity()
+	acc1 := account.CreatAddressFromIdentity(id1, 0)
+	id2, _ := account.CreatRandomIdentity()
+	acc2 := account.CreatAddressFromIdentity(id2, 0)
+	a := big.NewInt(10000000).Uint64()
+	env := GetTestEnv(&acc1, &a, nil, nil, nil, nil)
+	shardState := createDefaultShardState(env, nil, nil, nil, nil)
+	genesis := shardState.GetMinorTip()
+	b1 := shardState.getTip().CreateBlockToAppend(nil, nil, &acc1, nil, nil, nil, nil, nil, nil)
+	b2 := shardState.getTip().CreateBlockToAppend(nil, nil, &acc2, nil, nil, nil, nil, nil, nil)
+	rootBlock := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
+	rootBlock.AddMinorBlockHeader(b1.Header())
+	rootBlock.AddMinorBlockHeader(genesis)
+	rootBlock.Finalize(nil, nil, emptyHash)
+	rootBlock2 := shardState.GetRootTip().CreateBlockToAppend(nil, nil, nil, nil, nil)
+	rootBlock2.AddMinorBlockHeader(b2.Header())
+	rootBlock2.AddMinorBlockHeader(genesis)
+	rootBlock2.Finalize(nil, nil, emptyHash)
+	shardState.FinalizeAndAddBlock(b1)
+	shardState.AddRootBlock(rootBlock)
+	assert.Equal(t, b1.Header(), shardState.CurrentHeader())
+	shardState.FinalizeAndAddBlock(b2)
+	assert.Equal(t, b1.Header(), shardState.CurrentHeader())
+	rootBlock2.Header().ToTalDifficulty = new(big.Int).Add(rootBlock2.Header().Difficulty, rootBlock2.Header().ToTalDifficulty)
+	rootBlock2.Header().Difficulty = new(big.Int).Mul(rootBlock2.Header().Difficulty, big.NewInt(2))
+	_, err := shardState.AddRootBlock(rootBlock)
+	if err != nil {
+		t.Errorf("AddRootBlock err:%v", err)
+	}
+	assert.Equal(t, shardState.CurrentHeader(), b2.Header())
+	//shardState MinorBlockMeta?
+	assert.Equal(t, shardState.rootTip, rootBlock2.Header())
+	//self.assertEqual(state0.evm_state.trie.root_hash, b1.meta.hash_evm_state_root)  ?
 }
 
 func TestSkipUnderPricedTxToBlock(t *testing.T) {
