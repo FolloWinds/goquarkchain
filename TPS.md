@@ -4,32 +4,119 @@
 
 **Number of CPUs**
 
-[How many logical CPUs does the machine have for running one cluster?]
+[12*4=48]
 
 **Memory (GB)**
 
-[How much memory does the machine have for running one cluster? For example, 16G.]
+[24*4=96]
 
 **Storage (GB)**
 
-[Note down both the type and capacity of the storage on one machine. For example, SSD 1024G.]
+[40*4=160]
 
 **Network**
 
-[Comment on the network connecting clusters. For example, 1 Gbps LAN]
+[5mbps]
 
 **Machine Type (Optional)**
 
-[If you are using public cloud service, note down the name of the provider and the machine type. For example, AWS EC2 m5.2xlarge.]
+[ecs.c6.3xlarge (12 vCPU 24 GiB, 计算型 c6)]
 
 **Command Lines for Running Cluster**
 ```
-[Copy the command line here]
+[root@52c6efa11e66:/go/src/github.com/QuarkChain/goquarkchain/tests/loadtest/deployer# go run deploy_cluster.go
+INFO [11-30|10:30:53.298] ready to set Environment!!! 
+DEBUG[11-30|10:30:53.499] run cmd                                  host=172.31.101.161 cmd="docker images | grep quarkchaindocker/goquarkchain"
+DEBUG[11-30|10:30:53.499] already have images                      host=172.31.101.161 images name=quarkchaindocker/goquarkchain
+DEBUG[11-30|10:30:53.681] run cmd                                  host=172.31.101.162 cmd="docker images | grep quarkchaindocker/goquarkchain"
+DEBUG[11-30|10:30:53.681] already have images                      host=172.31.101.162 images name=quarkchaindocker/goquarkchain
+DEBUG[11-30|10:30:53.899] run cmd                                  host=172.31.101.163 cmd="docker images | grep quarkchaindocker/goquarkchain"
+DEBUG[11-30|10:30:53.899] already have images                      host=172.31.101.163 images name=quarkchaindocker/goquarkchain
+DEBUG[11-30|10:30:54.115] run cmd                                  host=172.31.101.164 cmd="docker images | grep quarkchaindocker/goquarkchain"
+DEBUG[11-30|10:30:54.115] already have images                      host=172.31.101.164 images name=quarkchaindocker/goquarkchain
+INFO [11-30|10:30:54.115] Environment set successfully!!!! 
+INFO [11-30|10:30:54.115] ============begin start cluster============ ClusterID=0
+INFO [11-30|10:30:54.115] ==== begin gen config 
+INFO [11-30|10:30:54.134] New local node record                    seq=1 id=fc417f4082bdfa0d ip=<nil> udp=0 tcp=0
+INFO [11-30|10:30:54.136] ==== begin send file to others cluster 
+DEBUG[11-30|10:30:54.305] run cmd                                  host=172.31.101.161 cmd="rm -rf  /tmp/QKC"
+DEBUG[11-30|10:30:54.470] run cmd                                  host=172.31.101.161 cmd="mkdir /tmp/QKC"
+DEBUG[11-30|10:30:54.874] run cmd                                  host=172.31.101.161 cmd="docker stop $(docker ps -a|grep bjqkc |awk '{print $1}')"
+DEBUG[11-30|10:30:55.103] run cmd                                  host=172.31.101.161 cmd="docker  rm $(docker ps -a|grep bjqkc |awk '{print $1}')"
+DEBUG[11-30|10:30:55.710] run cmd                                  host=172.31.101.161 cmd="docker run -itd --name bjqkc --network=host quarkchaindocker/goquarkchain"
+DEBUG[11-30|10:30:56.531] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc  /bin/bash -c  'mkdir /tmp/QKC/'"
+DEBUG[11-30|10:30:56.973] run cmd                                  host=172.31.101.161 cmd="docker cp /tmp/QKC/cluster bjqkc:/tmp/QKC"
+DEBUG[11-30|10:30:57.425] run cmd                                  host=172.31.101.161 cmd="docker cp /tmp/QKC/cluster_config_template.json bjqkc:/tmp/QKC"
+DEBUG[11-30|10:30:57.585] run cmd                                  host=172.31.101.162 cmd="rm -rf  /tmp/QKC"
+DEBUG[11-30|10:30:57.738] run cmd                                  host=172.31.101.162 cmd="mkdir /tmp/QKC"
+DEBUG[11-30|10:30:58.233] run cmd                                  host=172.31.101.162 cmd="docker stop $(docker ps -a|grep bjqkc |awk '{print $1}')"
+DEBUG[11-30|10:30:58.454] run cmd                                  host=172.31.101.162 cmd="docker  rm $(docker ps -a|grep bjqkc |awk '{print $1}')"
+DEBUG[11-30|10:30:59.013] run cmd                                  host=172.31.101.162 cmd="docker run -itd --name bjqkc --network=host quarkchaindocker/goquarkchain"
+DEBUG[11-30|10:30:59.758] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc  /bin/bash -c  'mkdir /tmp/QKC/'"
+DEBUG[11-30|10:31:00.190] run cmd                                  host=172.31.101.162 cmd="docker cp /tmp/QKC/cluster bjqkc:/tmp/QKC"
+DEBUG[11-30|10:31:00.589] run cmd                                  host=172.31.101.162 cmd="docker cp /tmp/QKC/cluster_config_template.json bjqkc:/tmp/QKC"
+DEBUG[11-30|10:31:00.758] run cmd                                  host=172.31.101.163 cmd="rm -rf  /tmp/QKC"
+DEBUG[11-30|10:31:00.922] run cmd                                  host=172.31.101.163 cmd="mkdir /tmp/QKC"
+DEBUG[11-30|10:31:01.323] run cmd                                  host=172.31.101.163 cmd="docker stop $(docker ps -a|grep bjqkc |awk '{print $1}')"
+DEBUG[11-30|10:31:01.552] run cmd                                  host=172.31.101.163 cmd="docker  rm $(docker ps -a|grep bjqkc |awk '{print $1}')"
+DEBUG[11-30|10:31:02.154] run cmd                                  host=172.31.101.163 cmd="docker run -itd --name bjqkc --network=host quarkchaindocker/goquarkchain"
+DEBUG[11-30|10:31:02.978] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc  /bin/bash -c  'mkdir /tmp/QKC/'"
+DEBUG[11-30|10:31:03.450] run cmd                                  host=172.31.101.163 cmd="docker cp /tmp/QKC/cluster bjqkc:/tmp/QKC"
+DEBUG[11-30|10:31:03.890] run cmd                                  host=172.31.101.163 cmd="docker cp /tmp/QKC/cluster_config_template.json bjqkc:/tmp/QKC"
+DEBUG[11-30|10:31:04.075] run cmd                                  host=172.31.101.164 cmd="rm -rf  /tmp/QKC"
+DEBUG[11-30|10:31:04.259] run cmd                                  host=172.31.101.164 cmd="mkdir /tmp/QKC"
+DEBUG[11-30|10:31:04.876] run cmd                                  host=172.31.101.164 cmd="docker stop $(docker ps -a|grep bjqkc |awk '{print $1}')"
+DEBUG[11-30|10:31:05.130] run cmd                                  host=172.31.101.164 cmd="docker  rm $(docker ps -a|grep bjqkc |awk '{print $1}')"
+DEBUG[11-30|10:31:05.732] run cmd                                  host=172.31.101.164 cmd="docker run -itd --name bjqkc --network=host quarkchaindocker/goquarkchain"
+DEBUG[11-30|10:31:06.607] run cmd                                  host=172.31.101.164 cmd="docker exec -itd bjqkc  /bin/bash -c  'mkdir /tmp/QKC/'"
+DEBUG[11-30|10:31:07.076] run cmd                                  host=172.31.101.164 cmd="docker cp /tmp/QKC/cluster bjqkc:/tmp/QKC"
+DEBUG[11-30|10:31:07.516] run cmd                                  host=172.31.101.164 cmd="docker cp /tmp/QKC/cluster_config_template.json bjqkc:/tmp/QKC"
+INFO [11-30|10:31:07.516] ==== begin start cluster 
+DEBUG[11-30|10:31:07.918] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S0>> S0.log 2>&1  '"
+DEBUG[11-30|10:31:08.314] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S1>> S1.log 2>&1  '"
+DEBUG[11-30|10:31:08.752] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S2>> S2.log 2>&1  '"
+DEBUG[11-30|10:31:09.183] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S3>> S3.log 2>&1  '"
+DEBUG[11-30|10:31:09.636] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S4>> S4.log 2>&1  '"
+DEBUG[11-30|10:31:10.080] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S5>> S5.log 2>&1  '"
+DEBUG[11-30|10:31:10.494] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S6>> S6.log 2>&1  '"
+DEBUG[11-30|10:31:10.950] run cmd                                  host=172.31.101.161 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S7>> S7.log 2>&1  '"
+DEBUG[11-30|10:31:11.299] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S8>> S8.log 2>&1  '"
+DEBUG[11-30|10:31:11.681] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S9>> S9.log 2>&1  '"
+DEBUG[11-30|10:31:12.084] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S10>> S10.log 2>&1  '"
+DEBUG[11-30|10:31:12.459] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S11>> S11.log 2>&1  '"
+DEBUG[11-30|10:31:12.866] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S12>> S12.log 2>&1  '"
+DEBUG[11-30|10:31:13.269] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S13>> S13.log 2>&1  '"
+DEBUG[11-30|10:31:13.668] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S14>> S14.log 2>&1  '"
+DEBUG[11-30|10:31:14.058] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S15>> S15.log 2>&1  '"
+DEBUG[11-30|10:31:14.535] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S16>> S16.log 2>&1  '"
+DEBUG[11-30|10:31:14.923] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S17>> S17.log 2>&1  '"
+DEBUG[11-30|10:31:15.341] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S18>> S18.log 2>&1  '"
+DEBUG[11-30|10:31:15.741] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S19>> S19.log 2>&1  '"
+DEBUG[11-30|10:31:16.150] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S20>> S20.log 2>&1  '"
+DEBUG[11-30|10:31:16.592] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S21>> S21.log 2>&1  '"
+DEBUG[11-30|10:31:17.027] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S22>> S22.log 2>&1  '"
+DEBUG[11-30|10:31:17.449] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S23>> S23.log 2>&1  '"
+DEBUG[11-30|10:31:17.851] run cmd                                  host=172.31.101.163 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S24>> S24.log 2>&1  '"
+DEBUG[11-30|10:31:18.266] run cmd                                  host=172.31.101.164 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S25>> S25.log 2>&1  '"
+DEBUG[11-30|10:31:18.715] run cmd                                  host=172.31.101.164 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S26>> S26.log 2>&1  '"
+DEBUG[11-30|10:31:19.144] run cmd                                  host=172.31.101.164 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S27>> S27.log 2>&1  '"
+DEBUG[11-30|10:31:19.586] run cmd                                  host=172.31.101.164 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S28>> S28.log 2>&1  '"
+DEBUG[11-30|10:31:20.003] run cmd                                  host=172.31.101.164 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S29>> S29.log 2>&1  '"
+DEBUG[11-30|10:31:20.451] run cmd                                  host=172.31.101.164 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S30>> S30.log 2>&1  '"
+DEBUG[11-30|10:31:20.894] run cmd                                  host=172.31.101.164 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --service S31>> S31.log 2>&1  '"
+DEBUG[11-30|10:31:31.263] run cmd                                  host=172.31.101.162 cmd="docker exec -itd bjqkc /bin/bash -c 'chmod +x /tmp/QKC/cluster && /tmp/QKC/cluster --cluster_config /tmp/QKC/cluster_config_template.json --json_rpc_host 0.0.0.0 --json_rpc_private_host 0.0.0.0 >>master.log 2>&1 '"
+INFO [11-30|10:31:31.263] ============end start cluster============ ClusterID=0
+INFO [11-30|10:31:31.263] ready to check status 
+INFO [11-30|10:31:41.264] check peer status                        masterIP=172.31.101.162 peers len=0 data=[]
+INFO [11-30|10:31:41.264] ========start cluster successfully       cluster cnt=1 peer number=0
+root@52c6efa11e66:/go/src/github.com/QuarkChain/goquarkchain/tests/loadtest/deployer# cd  $GOPATH/src/github.com/QuarkChain/goquarkchain/cmd/stats
+root@52c6efa11e66:/go/src/github.com/QuarkChain/goquarkchain/cmd/stats# go run stats.go --ip 172.31.101.162
+]
 ```
 
 **Peak TPS**
 
-[Note down the highest TPS observed.]
+[26933]
 
 **Video URL**
 
@@ -66,8 +153,72 @@ Timestamp		Syncing	TPS	Pend.TX	Conf.TX	BPS	SBPS	CPU	ROOT	CHAIN/SHARD-HEIGHT
 ```
 
 **Cluster Configurations**
-[Provide the link to the cluster config file (cluster_config_template.json, checked in to your forked repo) used in your clusters. 
-If deployer is used, please provide deployConfig.json as well (password is not needed).]
+[{
+  "DockerName": "quarkchaindocker/goquarkchain",
+  "Hosts": [
+    {
+      "IP": "172.31.101.161",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber": 10,
+      "ClusterID": 0
+    },
+    {
+      "IP": "172.31.101.162", 
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":true,
+      "SlaveNumber": 10,
+      "ClusterID": 0
+    },
+    {
+      "IP": "172.31.101.163", 
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber": 10,
+      "ClusterID": 0
+    },
+    {
+      "IP": "172.31.101.164", 
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber": 10,
+      "ClusterID": 0
+    },
+    {
+      "IP": "39.99.132.77", 
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber": 10,
+      "ClusterID": 0
+    },
+    {
+      "IP": "172.26.108.113", 
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber": 14,
+      "ClusterID": 0
+    }
+  ],
+  "CHAIN_SIZE": 64,
+  "SHARD_SIZE": 4,
+  "ExtraClusterConfig": {
+    "TargetRootBlockTime": 20,
+    "TargetMinorBlockTime": 4,
+    "GasLimit": 96000000
+  }
+}]
 
 **Additional Comment**
 
