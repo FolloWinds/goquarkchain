@@ -1,39 +1,133 @@
-{
-  "DockerName": "quarkchaindocker/goquarkchain",
+[{
+"DockerName": "quarkchaindocker/goquarkchain",
   "Hosts": [
     {
-      "IP": "xxx.xxx.xxx.xxx",
+      "IP": "172.16.16.13",
       "Port": 22,
       "User": "root",
-      "Password": "xxxxxxx",
+      "Password": "SAMtwo1102",
       "IsMaster":true,
-      "SlaveNumber": 1,
+      "SlaveNumber": 17,
       "ClusterID": 0
-    },
-    {
-      "IP": "xxx.xxx.xxx.xxx",
+    }, {
+      "IP": "172.16.16.6",
       "Port": 22,
       "User": "root",
-      "Password": "xxxxxxx",
-      "IsMaster":true,
-      "SlaveNumber": 1,
-      "ClusterID": 1
-    },
-    {
-      "IP": "xxx.xxx.xxx.xxx",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber": 17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.5",
       "Port": 22,
       "User": "root",
-      "Password": "xxxxxxx",
-      "IsMaster":true,
-      "SlaveNumber": 1,
-      "ClusterID": 2
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.9",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.7",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.4",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.12",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.10",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.17",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.15",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.8",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.3",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.2",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.14",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber":  17,
+      "ClusterID": 0
+    }, {
+      "IP": "172.16.16.16",
+      "Port": 22,
+      "User": "root",
+      "Password": "SAMtwo1102",
+      "IsMaster":false,
+      "SlaveNumber": 18,
+      "ClusterID": 0
     }
   ],
-  "CHAIN_SIZE": 4,
-  "SHARD_SIZE": 8,
+  "CHAIN_SIZE":256,
+  "SHARD_SIZE": 2,
   "ExtraClusterConfig": {
     "TargetRootBlockTime": 20,
     "TargetMinorBlockTime": 4,
     "GasLimit": 96000000
   }
-}
+}]
