@@ -34,7 +34,7 @@ go run deploy_cluster.go
 
 **Video URL**
 
-[URL for the video showing how you produced the above TPS.]
+[https://studio.youtube.com/video/vAV5_3gPU8w/edit]
 
 **Output From `stats` Tool**
 ```
