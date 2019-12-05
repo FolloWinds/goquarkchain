@@ -69,7 +69,7 @@ Timestamp               Syncing TPS     Pend.TX Conf.TX BPS     SBPS    CPU     
 ```
 
 **Cluster Configurations**
-
+https://github.com/FolloWinds/goquarkchain/blob/master/tests/loadtest/deployer/deployConfig.json
 
 **Additional Comment**
 
